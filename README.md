@@ -1,3 +1,7 @@
+# Distributed version of darknet/NNPACK
+
+A distributed darknet-nnpack for deep learning on IoT-based computing clusters
+
 # Darknet with NNPACK
 NNPACK was used to optimize [Darknet](https://github.com/pjreddie/darknet) without using a GPU. It is useful for embedded devices using ARM CPUs.
 
