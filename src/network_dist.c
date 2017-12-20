@@ -80,6 +80,9 @@ void forward_network_dist(network *netp)
     int i;
     //Network input
     //net.input
+    double read_t = 0;
+    double write_t = 0;
+
     for(i = 0; i < net.n; ++i){//Iteratively execute the layers
         net.index = i;
         layer l = net.layers[i];
@@ -92,12 +95,21 @@ void forward_network_dist(network *netp)
             net.truth = l.output;
         }
         printf("Index %d, Layer %s, input data size is: %d, output data size is: %d\n", i, get_layer_string(l.type), l.inputs, l.outputs);
-	//if(i > 0)
-	    //read_layer(netp, i);
-	//if(i < (net.n-1))
-	    //write_layer(netp, i);
-	    //printf("Output Layer %s\n", get_layer_string(net.layers[i+1].type) );
+
+	if(i > 0){
+            double t1 = what_time_is_it_now();
+	    read_layer(netp, i);
+            double t2 = what_time_is_it_now();
+	    read_t = read_t + t2 - t1; 
+	}
+	if(i < (net.n-1)){
+            double t1 = what_time_is_it_now();
+	    write_layer(netp, i);
+            double t2 = what_time_is_it_now();
+	    write_t = write_t + t2 - t1; 
+	}
     }
+    printf("Writing time is: %lf, reading time is: %lf\n", read_t, write_t);
     calc_network_cost(netp);
 }
 
