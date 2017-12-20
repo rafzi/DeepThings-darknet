@@ -92,10 +92,10 @@ void forward_network_dist(network *netp)
             net.truth = l.output;
         }
         printf("Index %d, Layer %s, input data size is: %d, output data size is: %d\n", i, get_layer_string(l.type), l.inputs, l.outputs);
-	if(i > 0)
-	    read_layer(netp, i);
-	if(i < (net.n-1))
-	    write_layer(netp, i);
+	//if(i > 0)
+	    //read_layer(netp, i);
+	//if(i < (net.n-1))
+	    //write_layer(netp, i);
 	    //printf("Output Layer %s\n", get_layer_string(net.layers[i+1].type) );
     }
     calc_network_cost(netp);
