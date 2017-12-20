@@ -1,8 +1,8 @@
 GPU=0
 CUDNN=0
 OPENCV=0
-NNPACK=1
-ARM_NEON=1
+NNPACK=0
+ARM_NEON=0
 OPENMP=0
 DEBUG=0
 
@@ -108,10 +108,10 @@ backup:
 results:
 	mkdir -p results
 test:
-	./$(EXEC) detector test cfg/coco.data cfg/yolo.cfg yolo.weights data/dog.jpg
+	./$(EXEC) detect cfg/yolo.cfg yolo.weights data/dog.jpg
 
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ)
+	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(EXECOBJ) *.log *.dat
 
