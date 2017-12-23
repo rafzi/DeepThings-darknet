@@ -95,7 +95,7 @@ void forward_network_dist(network *netp)
             net.truth = l.output;
         }
         printf("Index %d, Layer %s, input data size is: %d, output data size is: %d\n", i, get_layer_string(l.type), l.inputs, l.outputs);
-
+/*
 	if(i > 0){
             double t1 = what_time_is_it_now();
 	    read_layer(netp, i);
@@ -108,6 +108,7 @@ void forward_network_dist(network *netp)
             double t2 = what_time_is_it_now();
 	    write_t = write_t + t2 - t1; 
 	}
+*/
     }
     printf("Writing time is: %lf, reading time is: %lf\n", read_t, write_t);
     calc_network_cost(netp);
