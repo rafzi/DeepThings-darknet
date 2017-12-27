@@ -631,6 +631,25 @@ int is_network(section *s)
             || strcmp(s->type, "[network]")==0);
 }
 
+
+void extract_network_cfg_input(char *filename, int* h, int* w, int* c)
+{
+    list *sections = read_cfg(filename);
+    node *n = sections->front;
+    if(!n) error("Config file has no sections");
+
+    section *s = (section *)n->val;
+    list *options = s->options;
+    if(!is_network(s)) error("First section must be [net] or [network]");
+
+
+    *h = option_find_int_quiet(options, "height",0);
+    *w = option_find_int_quiet(options, "width",0);
+    *c = option_find_int_quiet(options, "channels",0);
+
+}
+
+
 network *parse_network_cfg(char *filename)
 {
     list *sections = read_cfg(filename);

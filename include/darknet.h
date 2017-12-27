@@ -739,6 +739,7 @@ void do_nms_sort(box *boxes, float **probs, int total, int classes, float thresh
 void do_nms_obj(box *boxes, float **probs, int total, int classes, float thresh);
 
 matrix make_matrix(int rows, int cols);
+void extract_network_cfg_input(char *filename, int* h, int* w, int* c);
 
 #ifndef __cplusplus
 #ifdef OPENCV
