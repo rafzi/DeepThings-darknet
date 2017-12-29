@@ -94,7 +94,7 @@ inline void forward_network_dist(network *netp)
         if(net.layers[i].truth) {
             net.truth = net.layers[i].output;
         }
-        printf("Index %d, Layer %s, input data size is: %d, output data size is: %d\n", i, get_layer_string(net.layers[i].type), net.layers[i].inputs, net.layers[i].outputs);
+        //printf("Index %d, Layer %s, input data size is: %d, output data size is: %d\n", i, get_layer_string(net.layers[i].type), net.layers[i].inputs, net.layers[i].outputs);
 /*
 	if(i > 0){
             double t1 = what_time_is_it_now();
