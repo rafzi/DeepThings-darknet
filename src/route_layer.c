@@ -22,7 +22,9 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
     fprintf(stderr, "\n");
     l.outputs = outputs;
     l.inputs = outputs;
+#ifdef LIGHT_MEM
     l.delta =  calloc(outputs*batch, sizeof(float));
+#endif//LIGHT_MEM
     l.output = calloc(outputs*batch, sizeof(float));;
 
     l.forward = forward_route_layer;

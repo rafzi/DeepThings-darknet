@@ -41,8 +41,9 @@ layer make_reorg_layer(int batch, int w, int h, int c, int stride, int reverse, 
     }
     int output_size = l.outputs * batch;
     l.output =  calloc(output_size, sizeof(float));
+#ifdef LIGHT_MEM
     l.delta =   calloc(output_size, sizeof(float));
-
+#endif//LIGHT_MEM
     l.forward = forward_reorg_layer;
     l.backward = backward_reorg_layer;
 #ifdef GPU

@@ -37,7 +37,9 @@ maxpool_layer make_maxpool_layer(int batch, int h, int w, int c, int size, int s
     int output_size = l.out_h * l.out_w * l.out_c * batch;
     l.indexes = calloc(output_size, sizeof(int));
     l.output =  calloc(output_size, sizeof(float));
+#ifdef LIGHT_MEM
     l.delta =   calloc(output_size, sizeof(float));
+#endif//LIGHT_MEM
     l.forward = forward_maxpool_layer;
     l.backward = backward_maxpool_layer;
     #ifdef GPU

@@ -193,7 +193,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.batch_normalize = batch_normalize;
 
     l.weights = calloc(c/groups*n*size*size, sizeof(float));
+#ifdef LIGHT_MEM
     l.weight_updates = calloc(c/groups*n*size*size, sizeof(float));
+#endif//LIGHT_MEM
 
     l.biases = calloc(n, sizeof(float));
     l.bias_updates = calloc(n, sizeof(float));
@@ -215,7 +217,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.inputs = l.w * l.h * l.c;
 
     l.output = calloc(l.batch*l.outputs, sizeof(float));
+#ifdef LIGHT_MEM
     l.delta  = calloc(l.batch*l.outputs, sizeof(float));
+#endif//LIGHT_MEM
 #ifdef NNPACK
 	l.forward = forward_convolutional_layer_nnpack;
 #else
@@ -248,8 +252,10 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
 
         l.rolling_mean = calloc(n, sizeof(float));
         l.rolling_variance = calloc(n, sizeof(float));
+#ifdef LIGHT_MEM
         l.x = calloc(l.batch*l.outputs, sizeof(float));
         l.x_norm = calloc(l.batch*l.outputs, sizeof(float));
+#endif//LIGHT_MEM
     }
     if(adam){
         l.m = calloc(l.nweights, sizeof(float));

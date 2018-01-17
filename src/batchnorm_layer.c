@@ -155,7 +155,9 @@ void normalize_cpu_thread(struct normalize_params *params, size_t batch, size_t 
 void forward_batchnorm_layer(layer l, network net)
 {
     if(l.type == BATCHNORM) copy_cpu(l.outputs*l.batch, net.input, 1, l.output, 1);
+#ifdef LIGHT_MEM
     copy_cpu(l.outputs*l.batch, l.output, 1, l.x, 1);
+#endif//LIGHT_MEM
     if(net.train){
         mean_cpu(l.output, l.batch, l.out_c, l.out_h*l.out_w, l.mean);
         variance_cpu(l.output, l.mean, l.batch, l.out_c, l.out_h*l.out_w, l.variance);
