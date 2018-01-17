@@ -553,6 +553,10 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
     set_batch_network(net, 1);
     srand(2222222);
 
+#ifdef NNPACK
+    nnp_initialize();
+    net->threadpool = pthreadpool_create(4);
+#endif
     list *options = read_data_cfg(datacfg);
 
     char *name_list = option_find_str(options, "names", 0);
@@ -596,6 +600,11 @@ void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *fi
         free_image(im);
         if (filename) break;
     }
+
+#ifdef NNPACK
+    pthreadpool_destroy(net->threadpool);
+    nnp_deinitialize();
+#endif
 }
 
 
