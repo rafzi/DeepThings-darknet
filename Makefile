@@ -72,7 +72,7 @@ CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectoriz
 endif
 
 
-ifeq ($(LIGHT_MEM), 1)
+ifeq ($(LIGHT_MEM), 0)
 COMMON+= -DLIGHT_MEM
 CFLAGS+= -DLIGHT_MEM
 endif
