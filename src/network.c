@@ -418,7 +418,11 @@ int resize_network(network *net, int w, int h)
     }
 #else
     free(net->workspace);
+
+#ifndef NNPACK
     net->workspace = calloc(1, workspace_size);
+#endif
+
 #endif
     //fprintf(stderr, " Done!\n");
     return 0;

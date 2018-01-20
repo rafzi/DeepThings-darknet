@@ -781,7 +781,11 @@ network *parse_network_cfg(char *filename)
             net->workspace = calloc(1, workspace_size);
         }
 #else
+
+#ifndef NNPACK
         net->workspace = calloc(1, workspace_size);
+#endif
+
 #endif
     }
     return net;
