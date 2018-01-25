@@ -513,7 +513,7 @@ void forward_convolutional_layer_half_h(convolutional_layer l, network net){
        for(i = 0; i < w; ++i){
            int in_index  = i + w*(j + h*k);
            int out_index  = i + w*(j + out_h*k);
-	   out1[in_index] = net.input[out_index];
+	   out1[out_index] = net.input[in_index];
        }
      }
    }
@@ -523,11 +523,10 @@ void forward_convolutional_layer_half_h(convolutional_layer l, network net){
        for(i = 0; i < w; ++i){
            int in_index  = i + w*(j + h/2 + h*k);
            int out_index  = i + w*(j + out_h*k);
-	   out2[in_index] = net.input[out_index];
+	   out2[out_index] = net.input[in_index];
        }
      }
    }
-
 
 
 }
