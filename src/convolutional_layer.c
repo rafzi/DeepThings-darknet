@@ -493,6 +493,48 @@ void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
 	if(l.binary || l.xnor) swap_binary(&l);
 }
 #endif
+#ifdef DATA_DIST
+void forward_convolutional_layer_half_h(convolutional_layer l, network net){
+//devide the data into hald and half
+
+//l.w, l.h, l.c, l.inputs
+//l.out_w, l.out_h, l.out_c/l.n, l.outputs
+//l.weight, l.weights
+   int w = l.w;
+   int h = l.h;
+   int c = l.c;
+
+   int out_h = l.h/2;
+   float* out1 = (float*) malloc( sizeof(float)*w*out_h*c );  
+   float* out2 = (float*) malloc( sizeof(float)*w*out_h*c );  
+
+   for(k = 0; k < c; ++k){
+     for(j = 0; j < out_h; ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + h*k);
+           int out_index  = i + w*(j + out_h*k);
+	   out1[in_index] = net.input[out_index];
+       }
+     }
+   }
+    
+   for(k = 0; k < c; ++k){
+     for(j = 0; j < out_h; ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + h/2 + h*k);
+           int out_index  = i + w*(j + out_h*k);
+	   out2[in_index] = net.input[out_index];
+       }
+     }
+   }
+
+
+
+}
+
+
+
+#endif
 
 void forward_convolutional_layer(convolutional_layer l, network net)
 {
