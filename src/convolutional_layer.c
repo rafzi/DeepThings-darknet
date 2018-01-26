@@ -450,6 +450,245 @@ void backward_bias(float *bias_updates, float *delta, int batch, int n, int size
     }
 }
 
+
+
+
+
+#ifdef DATA_DIST
+#ifdef NNPACK
+void forward_convolutional_layer_nnpack_impl(convolutional_layer l, network net)
+{
+	struct nnp_size input_size = { l.w, l.h };
+	struct nnp_padding input_padding = { l.pad, l.pad, l.pad, l.pad };
+	struct nnp_size kernel_size = { l.size, l.size };
+	struct nnp_size stride = { l.stride, l.stride };
+
+	nnp_convolution_inference(
+		nnp_convolution_algorithm_implicit_gemm,
+		nnp_convolution_transform_strategy_tuple_based,
+		l.c,
+		l.n,
+		input_size,
+		input_padding,
+		kernel_size,
+		stride,
+		net.input,
+		l.weights,
+		NULL,
+		l.output,
+		NULL,
+		NULL,
+		nnp_activation_identity,
+		NULL,
+		net.threadpool,
+		NULL
+	);
+
+	int out_h = convolutional_out_height(l);
+	int out_w = convolutional_out_width(l);
+	int n = out_h*out_w;
+
+	if(l.batch_normalize){
+		forward_batchnorm_layer(l, net);
+	} else {
+		add_bias(l.output, l.biases, l.batch, l.n, out_h*out_w);
+	}
+
+	activate_array_thread(l.output, l.n, n, l.activation, net.threadpool);
+	if(l.binary || l.xnor) swap_binary(&l);
+}
+#endif//NNPACKs
+void forward_convolutional_layer_impl(convolutional_layer l, network net)
+{
+    int i, j;
+
+    fill_cpu(l.outputs*l.batch, 0, l.output, 1);
+
+    if(l.xnor){
+        binarize_weights(l.weights, l.n, l.c/l.groups*l.size*l.size, l.binary_weights);
+        swap_binary(&l);
+        binarize_cpu(net.input, l.c*l.h*l.w*l.batch, l.binary_input);
+        net.input = l.binary_input;
+    }
+
+    int m = l.n/l.groups;
+    int k = l.size*l.size*l.c/l.groups;
+    int n = l.out_w*l.out_h;
+    for(i = 0; i < l.batch; ++i){
+        for(j = 0; j < l.groups; ++j){
+            float *a = l.weights + j*l.nweights/l.groups;
+            float *b = net.workspace;
+            float *c = l.output + (i*l.groups + j)*n*m;
+
+            im2col_cpu(net.input + (i*l.groups + j)*l.c/l.groups*l.h*l.w,
+                l.c/l.groups, l.h, l.w, l.size, l.stride, l.pad, b);
+            gemm(0,0,m,n,k,1,a,k,b,n,1,c,n);
+        }
+    }
+
+    if(l.batch_normalize){
+        forward_batchnorm_layer(l, net);
+    } else {
+        add_bias(l.output, l.biases, l.batch, l.n, l.out_h*l.out_w);
+    }
+
+    activate_array(l.output, l.outputs*l.batch, l.activation);
+    if(l.binary || l.xnor) swap_binary(&l);
+}
+
+
+void forward_convolutional_layer_half_h(float* out1, float* out2, float* out, convolutional_layer l, network net){
+//devide the data into hald and half
+
+//l.w, l.h, l.c, l.inputs
+//l.out_w, l.out_h, l.out_c/l.n, l.outputs
+//l.weight, l.weights
+   int i, j, k;
+
+   int w = l.w;
+   int h = l.h;
+   int c = l.c;
+
+   int out_h = l.h/2 + l.size/2;
+
+
+//div input 
+   for(k = 0; k < c; ++k){
+     for(j = 0; j < out_h; ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + h*k);
+           int out_index  = i + w*(j + out_h*k);
+	   out1[out_index] = net.input[in_index];
+       }
+     }
+   }
+    
+   for(k = 0; k < c; ++k){
+     for(j = 0; j < out_h; ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + (h/2 - l.size/2) + h*k);
+           int out_index  = i + w*(j + out_h*k);
+	   out2[out_index] = net.input[in_index];
+       }
+     }
+   }
+
+   convolutional_layer l1 = make_convolutional_layer(1, out_h, l.w, l.c, l.n, l.groups, l.size, l.stride, l.size/2, l.activation, l.batch_normalize, l.binary, l.xnor, 0);
+   convolutional_layer l2 = make_convolutional_layer(1, out_h, l.w, l.c, l.n, l.groups, l.size, l.stride, l.size/2, l.activation, l.batch_normalize, l.binary, l.xnor, 0);
+   l1.biases = l.biases; l2.biases = l.biases;
+   l1.scales = l.scales; l2.scales = l.scales;
+   l1.rolling_mean = l.rolling_mean; l2.rolling_mean = l.rolling_mean;
+   l1.rolling_variance = l.rolling_variance; l2.rolling_variance = l.rolling_variance;
+   l1.weights = l.weights; l2.weights = l.weights;
+
+   
+   float* tmp = net.input;
+   net.input = out1;
+#ifdef NNPACK
+   forward_convolutional_layer_nnpack_impl(l1, net);
+#else//NNPACKs
+   forward_convolutional_layer_impl(l1, net);
+#endif//NNPACKs
+   net.input = out2;
+#ifdef NNPACK
+   forward_convolutional_layer_nnpack_impl(l2, net);
+#else
+   forward_convolutional_layer_impl(l2, net);
+#endif//NNPACKs
+
+   net.input = tmp;
+   for(k = 0; k < l.out_c; ++k){
+     for(j = 0; j < (out_h - l.size/2); ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + out_h*k);
+           int out_index  =  i + w*(j + h*k);
+           //if((in_index+1)%4 == 0) printf("\n");
+	   out[out_index] = l1.output[in_index];
+       }
+     }
+   }
+
+   for(k = 0; k < l.out_c; ++k){
+     for(j = l.size/2; j < out_h; ++j){
+       for(i = 0; i < w; ++i){
+           int in_index  = i + w*(j + out_h*k);
+           int out_index  = i + w*(j + (h/2-l.size/2) + h*k);
+           //if((in_index+1)%4 == 0) printf("\n");
+	   out[out_index] = l2.output[in_index];
+       }
+     }
+   }
+/*
+      printf("\n");printf("=======\n");    
+      for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
+	printf("%.1f", l1.output[i]);
+	if((i+1)%l.out_w == 0) printf("\n");
+      }
+*/
+}
+#ifdef NNPACK
+void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
+{
+
+
+    float* out1 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    float* out2 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    float* out = (float*) malloc( sizeof(float)*l.out_w*l.out_h*l.n );  
+
+    if(l.w%2==0){
+	printf("Runing the partition version of the convolutionary layer\n");
+	forward_convolutional_layer_half_h(out1, out2, out, l, net);
+    }
+    forward_convolutional_layer_nnpack_impl(l, net);
+    int i;
+    if(l.w%2==0){
+/*     
+      printf("\n");printf("*******\n");    
+      for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
+	printf("%.1f", out[i]);
+	if((i+1)%l.out_w == 0) printf("\n");
+      }
+*/
+      for(i =0; i < l.outputs; i++){
+	if(l.output[i]!=out[i]) printf("Wrong!\n");
+      }
+     
+    }
+}
+#endif // NNPACK
+void forward_convolutional_layer(convolutional_layer l, network net)
+{
+
+
+    float* out1 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    float* out2 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    float* out = (float*) malloc( sizeof(float)*l.out_w*l.out_h*l.n );  
+
+    if(l.w%2==0){
+	printf("Runing the partition version of the convolutionary layer\n");
+	forward_convolutional_layer_half_h(out1, out2, out, l, net);
+    }
+    forward_convolutional_layer_impl(l, net);
+    int i;
+    if(l.w%2==0){
+/*     
+      printf("\n");printf("*******\n");    
+      for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
+	printf("%.1f", out[i]);
+	if((i+1)%l.out_w == 0) printf("\n");
+      }
+*/
+      for(i =0; i < l.outputs; i++){
+	if(l.output[i]!=out[i]) printf("Wrong!\n");
+      }
+     
+    }
+}
+
+
+
+#else//DATA_DIST
+
 #ifdef NNPACK
 void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
 {
@@ -492,48 +731,7 @@ void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
 	activate_array_thread(l.output, l.n, n, l.activation, net.threadpool);
 	if(l.binary || l.xnor) swap_binary(&l);
 }
-#endif
-#ifdef DATA_DIST
-void forward_convolutional_layer_half_h(convolutional_layer l, network net){
-//devide the data into hald and half
-
-//l.w, l.h, l.c, l.inputs
-//l.out_w, l.out_h, l.out_c/l.n, l.outputs
-//l.weight, l.weights
-   int w = l.w;
-   int h = l.h;
-   int c = l.c;
-
-   int out_h = l.h/2;
-   float* out1 = (float*) malloc( sizeof(float)*w*out_h*c );  
-   float* out2 = (float*) malloc( sizeof(float)*w*out_h*c );  
-
-   for(k = 0; k < c; ++k){
-     for(j = 0; j < out_h; ++j){
-       for(i = 0; i < w; ++i){
-           int in_index  = i + w*(j + h*k);
-           int out_index  = i + w*(j + out_h*k);
-	   out1[out_index] = net.input[in_index];
-       }
-     }
-   }
-    
-   for(k = 0; k < c; ++k){
-     for(j = 0; j < out_h; ++j){
-       for(i = 0; i < w; ++i){
-           int in_index  = i + w*(j + h/2 + h*k);
-           int out_index  = i + w*(j + out_h*k);
-	   out2[out_index] = net.input[in_index];
-       }
-     }
-   }
-
-
-}
-
-
-
-#endif
+#endif//NNPACK
 
 void forward_convolutional_layer(convolutional_layer l, network net)
 {
@@ -572,6 +770,9 @@ void forward_convolutional_layer(convolutional_layer l, network net)
     activate_array(l.output, l.outputs*l.batch, l.activation);
     if(l.binary || l.xnor) swap_binary(&l);
 }
+
+#endif//DATA_DIST
+
 
 void backward_convolutional_layer(convolutional_layer l, network net)
 {

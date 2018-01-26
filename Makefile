@@ -6,6 +6,7 @@ ARM_NEON=1
 OPENMP=0
 DEBUG=0
 LIGHT_MEM=1
+DATA_DIST=1
 
 ARCH= -gencode arch=compute_30,code=sm_30 \
       -gencode arch=compute_35,code=sm_35 \
@@ -71,6 +72,10 @@ COMMON+= -DARM_NEON
 CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectorize
 endif
 
+ifeq ($(DATA_DIST), 1)
+COMMON+= -DDATA_DIST
+CFLAGS+= -DDATA_DIST
+endif
 
 ifeq ($(LIGHT_MEM), 0)
 COMMON+= -DLIGHT_MEM
