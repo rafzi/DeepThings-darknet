@@ -654,6 +654,10 @@ void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
       }
      
     }
+    free(out1);
+    free(out2);
+    free(out);
+
 }
 #endif // NNPACK
 void forward_convolutional_layer(convolutional_layer l, network net)
@@ -683,6 +687,10 @@ void forward_convolutional_layer(convolutional_layer l, network net)
       }
      
     }
+
+    free(out1);
+    free(out2);
+    free(out);
 }
 
 
