@@ -221,9 +221,9 @@ convolutional_layer make_convolutional_layer(int batch, int h, int w, int c, int
     l.delta  = calloc(l.batch*l.outputs, sizeof(float));
 #endif//LIGHT_MEM
 #ifdef NNPACK
-	l.forward = forward_convolutional_layer_nnpack;
+    l.forward = forward_convolutional_layer_nnpack;
 #else
-	l.forward = forward_convolutional_layer;
+    l.forward = forward_convolutional_layer;
 #endif
     l.backward = backward_convolutional_layer;
     l.update = update_convolutional_layer;
@@ -664,17 +664,20 @@ void forward_convolutional_layer(convolutional_layer l, network net)
 {
 
 
-    float* out1 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
-    float* out2 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
-    float* out = (float*) malloc( sizeof(float)*l.out_w*l.out_h*l.n );  
+    //float* out1 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    //float* out2 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
+    //float* out = (float*) malloc( sizeof(float)*l.out_w*l.out_h*l.n );  
 
-    if(l.w%2==0){
-	printf("Runing the partition version of the convolutionary layer\n");
-	forward_convolutional_layer_half_h(out1, out2, out, l, net);
-    }
+    //if(l.w%2==0){
+	//printf("Runing the layer type \n");
+	//forward_convolutional_layer_half_h(out1, out2, out, l, net);
+    //}
+
+
+    printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
     forward_convolutional_layer_impl(l, net);
-    int i;
-    if(l.w%2==0){
+//    int i;
+//    if(l.w%2==0){
 /*     
       printf("\n");printf("*******\n");    
       for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
@@ -682,15 +685,15 @@ void forward_convolutional_layer(convolutional_layer l, network net)
 	if((i+1)%l.out_w == 0) printf("\n");
       }
 */
-      for(i =0; i < l.outputs; i++){
-	if(l.output[i]!=out[i]) printf("Wrong!\n");
-      }
+//      for(i =0; i < l.outputs; i++){
+//	if(l.output[i]!=out[i]) printf("Wrong!\n");
+//      }
      
-    }
+//    }
 
-    free(out1);
-    free(out2);
-    free(out);
+    //free(out1);
+    //free(out2);
+    //free(out);
 }
 
 

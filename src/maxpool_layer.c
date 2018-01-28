@@ -119,6 +119,8 @@ void maxpool_thread(struct maxpool_params *params, size_t b, size_t k)
 
 void forward_maxpool_layer(const maxpool_layer l, network net)
 {
+
+
 #ifdef NNPACK
 	struct maxpool_params params = { &l, &net };
 	pthreadpool_compute_2d(net.threadpool, (pthreadpool_function_2d_t)maxpool_thread,
@@ -158,6 +160,7 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
 		}
 	}
 #endif
+        printf("max          %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
 }
 
 void backward_maxpool_layer(const maxpool_layer l, network net)
