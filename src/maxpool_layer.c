@@ -160,7 +160,7 @@ void forward_maxpool_layer(const maxpool_layer l, network net)
 		}
 	}
 #endif
-        printf("max          %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
+        //printf("max          %d x %d / %d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
 }
 
 void backward_maxpool_layer(const maxpool_layer l, network net)

@@ -639,7 +639,7 @@ void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
 	//printf("Runing the partition version of the convolutionary layer\n");
 	//forward_convolutional_layer_half_h(out1, out2, out, l, net);
     //}
-    printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
+    //printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
     forward_convolutional_layer_nnpack_impl(l, net);
     //int i;
     //if(l.w%2==0){
@@ -675,7 +675,7 @@ void forward_convolutional_layer(convolutional_layer l, network net)
     //}
 
 
-    printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d, group is %d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c, l.groups);
+    //printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d, group is %d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c, l.groups);
     forward_convolutional_layer_impl(l, net);
 //    int i;
 //    if(l.w%2==0){
