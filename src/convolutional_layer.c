@@ -618,47 +618,12 @@ void forward_convolutional_layer_half_h(float* out1, float* out2, float* out, co
        }
      }
    }
-/*
-      printf("\n");printf("=======\n");    
-      for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
-	printf("%.1f", l1.output[i]);
-	if((i+1)%l.out_w == 0) printf("\n");
-      }
-*/
+
 }
 #ifdef NNPACK
 void forward_convolutional_layer_nnpack(convolutional_layer l, network net)
 {
-
-
-    //float* out1 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
-    //float* out2 = (float*) malloc( sizeof(float)*l.w*(l.h/2 + l.size/2)*l.c );  
-    //float* out = (float*) malloc( sizeof(float)*l.out_w*l.out_h*l.n );  
-
-    //if(l.w%2==0){
-	//printf("Runing the partition version of the convolutionary layer\n");
-	//forward_convolutional_layer_half_h(out1, out2, out, l, net);
-    //}
-    //printf("conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", l.n, l.size, l.size, l.stride, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
     forward_convolutional_layer_nnpack_impl(l, net);
-    //int i;
-    //if(l.w%2==0){
-/*     
-      printf("\n");printf("*******\n");    
-      for(i = 0; i < l.w*(l.h/2 + l.size/2); i++){
-	printf("%.1f", out[i]);
-	if((i+1)%l.out_w == 0) printf("\n");
-      }
-*/
-     // for(i =0; i < l.outputs; i++){
-	//if(l.output[i]!=out[i]) printf("Wrong!\n");
-     // }
-     
-    //}
-    //free(out1);
-    //free(out2);
-    //free(out);
-
 }
 #endif // NNPACK
 void forward_convolutional_layer(convolutional_layer l, network net)
