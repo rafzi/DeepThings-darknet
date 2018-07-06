@@ -1,9 +1,11 @@
-# Distributed version of darknet/NNPACK
+# Lightweight version of Darknet with NNPACK
 
-A distributed darknet-nnpack for deep learning on IoT-based computing clusters
+Forked from https://github.com/digitalbrain79/darknet-nnpack, where NNPACK was used to optimize [Darknet](https://github.com/pjreddie/darknet) without using a GPU. It is useful for embedded devices using ARM CPUs.
 
-# Darknet with NNPACK
-NNPACK was used to optimize [Darknet](https://github.com/pjreddie/darknet) without using a GPU. It is useful for embedded devices using ARM CPUs.
+Comparing with original version, the modifications/improvements in this version are:
+* Reducing inference memory footpinrt by removing unnecessary memory allocations.
+* Fixing bugs on loading weight on 32-bit OS (For example, Raspbian)
+* Improving C++ compatibility.
 
 ## Build from Raspberry Pi 3
 Log in to Raspberry Pi using SSH.<br/>
