@@ -1,4 +1,4 @@
-# Lightweight version of Darknet with NNPACK
+# Lightweight Darknet with NNPACK
 
 Forked from https://github.com/digitalbrain79/darknet-nnpack, where NNPACK was used to optimize [Darknet](https://github.com/pjreddie/darknet) without using a GPU. It is useful for embedded devices using ARM CPUs.
 
