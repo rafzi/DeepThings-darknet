@@ -1,7 +1,9 @@
 #ifndef BLAS_H
 #define BLAS_H
 #include "darknet.h"
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 void flatten(float *x, int size, int layers, int batch, int forward);
 void pm(int M, int N, float *A);
 float *random_matrix(int rows, int cols);
@@ -41,6 +43,9 @@ void weighted_delta_cpu(float *a, float *b, float *s, float *da, float *db, floa
 
 void softmax(float *input, int n, float temp, int stride, float *output);
 void softmax_cpu(float *input, int n, int batch, int batch_offset, int groups, int group_offset, int stride, float temp, float *output);
+#ifdef __cplusplus
+}//extern "C"
+#endif
 
 #ifdef GPU
 #include "cuda.h"
