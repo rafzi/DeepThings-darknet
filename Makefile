@@ -62,9 +62,9 @@ LDFLAGS+= -lcudnn
 endif
 
 ifeq ($(NNPACK), 1)
-COMMON+= -DNNPACK
+COMMON+= -DNNPACK -I../../NNPACK-darknet/include -I../../NNPACK-darknet/deps/pthreadpool/include
 CFLAGS+= -DNNPACK
-LDFLAGS+= -lnnpack -lpthreadpool
+LDFLAGS+= -lnnpack -lpthreadpool -L../../NNPACK-darknet/lib
 endif
 
 ifeq ($(ARM_NEON), 1)
